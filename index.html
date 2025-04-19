@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>App Maintenance</title> <!-- More generic title -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      /* Subtle blue gradient background */
+      background: linear-gradient(135deg, #eaf9ff 0%, #cdecf9 100%);
+      font-family: 'Poppins', sans-serif; /* Apply Poppins font */
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      touch-action: none; /* Prevent default touch actions */
+    }
+
+    /* Full screen wrapper, initially hidden */
+    #maintenanceWrapper {
+      display: none; /* Hidden by default, shown via JS */
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    /* Maintenance Title Styling */
+    #maintenanceTitle {
+      font-size: clamp(2.2rem, 7vw, 4rem); /* Responsive font size */
+      font-weight: 700; /* Bold Poppins */
+      color: #0a4d68; /* Darker blue */
+      margin-bottom: 25px;
+      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Animation Area Styling */
+    #maintenanceAnimation {
+      width: clamp(60px, 15vw, 100px); /* Responsive size for the SVG container */
+      height: clamp(60px, 15vw, 100px);
+      margin-bottom: 35px;
+      animation: spin 3s linear infinite; /* Apply spin animation */
+    }
+
+    /* Style the SVG gear */
+    #maintenanceAnimation svg {
+        width: 100%;
+        height: 100%;
+        fill: #ff69b4; /* Use a theme color (pink) for the gear */
+    }
+
+    /* Keyframes for the spinning animation */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Message Box Styling (Card Look) */
+    #maintenanceMessageBox {
+      background: rgba(255, 255, 255, 0.85); /* Slightly transparent white */
+      backdrop-filter: blur(8px); /* Frosted glass effect (browser support varies) */
+      -webkit-backdrop-filter: blur(8px); /* Safari prefix */
+      border: none;
+      border-top: 4px solid #ff69b4; /* Pink accent border on top */
+      border-radius: 12px; /* Rounded corners */
+      padding: clamp(20px, 5vw, 35px); /* Responsive padding */
+      width: 90%;
+      max-width: 650px; /* Max width */
+      box-shadow: 0 8px 25px rgba(80, 120, 150, 0.15); /* Softer shadow */
+      margin-bottom: 20px; /* Space before footer note */
+    }
+
+    /* Fetched Message Content Styling */
+    #maintenanceContent {
+      font-size: clamp(0.95rem, 3vw, 1.25rem); /* Responsive font size */
+      font-weight: 400; /* Regular Poppins */
+      color: #333; /* Dark gray for readability */
+      word-wrap: break-word;
+      line-height: 1.6;
+      min-height: 3em; /* Prevent collapsing while loading */
+      display: flex; /* Center placeholder text */
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Simple loading dots animation (optional) */
+    #maintenanceContent.loading::after {
+      content: ' .';
+      animation: dots 1.4s linear infinite;
+      display: inline-block; /* Keeps dots on same line */
+    }
+    @keyframes dots {
+        0%, 20% { content: ' .'; }
+        40% { content: ' ..'; }
+        60%, 100% { content: ' ...'; }
+    }
+
+
+    /* Static footer note */
+    .footer-note {
+        font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+        color: #5a7a8a; /* Muted color */
+        margin-top: 15px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Maintenance Page Structure -->
+  <div id="maintenanceWrapper">
+    <div id="maintenanceTitle">Under Maintenance</div> <!-- Changed Title slightly -->
+
+    <div id="maintenanceAnimation">
+      <!-- Simple Inline SVG Gear Icon -->
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19.48 10.03A8.49 8.49 0 0012.02 4.5a8.5 8.5 0 00-7.46 5.53L2 10.71v2.58l2.56-.73A8.49 8.49 0 0012.02 19.5a8.5 8.5 0 007.46-5.53L22 13.29v-2.58l-2.52-.7zm-1.41 1.46a6.5 6.5 0 01-12.14 0l-.13.37-1.41.4 1.95 5.57.53.18a6.5 6.5 0 0111.28 0l.53-.18 1.95-5.57-1.41-.4-.13-.37zM12 15.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7zm0-2a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+      </svg>
+    </div>
+
+    <div id="maintenanceMessageBox">
+      <div id="maintenanceContent" class="loading">Checking status...</div> <!-- Placeholder text & loading class -->
+    </div>
+
+    <div class="footer-note">
+      We're working hard to improve things. Thanks for your patience!
+    </div>
+  </div>
+
+  
+<script>
+  async function verifyAccessBeforeContinue() {
+    const params = new URLSearchParams(window.location.search);
+    const ts = params.get("ts");
+    const token = params.get("token");
+    const secret = "AppSecretSalt";
+
+    if (!ts || !token || Date.now() - parseInt(ts) > 5 * 60 * 1000) {
+      document.body.innerHTML = "<h2 style='text-align:center;margin-top:20%;font-family:sans-serif;color:#c00;'>Server is temporarily down. Please try again later.</h2>";
+      return;
+    }
+
+    const raw = ts + secret;
+    const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(raw));
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const expectedToken = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+    if (expectedToken !== token) {
+      document.body.innerHTML = "<h2 style='text-align:center;margin-top:20%;font-family:sans-serif;color:#c00;'>App Removed or Moved. Please contact support.</h2>";
+      return;
+    }
+
+    runGitHubHostScript(); // Call the original logic
+  }
+</script>
+
+<script>
+function runGitHubHostScript() {
+
+    const maintenanceUrl = 'https://raw.githubusercontent.com/Dhiraj9619/ChatApp/refs/heads/main/MaintenanceV3.txt';
+    const appUrl = 'https://dhiraj9619.github.io/ChatApp/?v=' + Date.now();
+    const maintenanceContentEl = document.getElementById('maintenanceContent');
+
+    fetch(maintenanceUrl)
+      .then(response => {
+        if (!response.ok) {
+          // Check specifically for 404 Not Found
+          if (response.status === 404) {
+             console.warn('Maintenance file not found (404). Assuming no maintenance.');
+             // Treat 404 as "no maintenance message"
+             return ''; // Return empty string to proceed to app redirect
+          }
+          // For other HTTP errors, throw an error
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(text => {
+        maintenanceContentEl.classList.remove('loading'); // Remove loading dots
+        const trimmed = text.trim();
+        if (trimmed.length > 0) {
+          // Maintenance is active
+          maintenanceContentEl.innerText = trimmed;
+          // Display the maintenance wrapper
+          document.getElementById('maintenanceWrapper').style.display = 'flex';
+        } else {
+          // No maintenance message (or file was 404), redirect to the app
+          window.location.href = appUrl;
+        }
+      })
+      .catch(err => {
+        console.error('Fetch error:', err);
+        maintenanceContentEl.classList.remove('loading'); // Remove loading dots
+        maintenanceContentEl.innerText = 'Could not check maintenance status. Redirecting...';
+        // On fetch error, still redirect to the app after a short delay (optional)
+        // setTimeout(() => {
+             window.location.href = appUrl;
+        // }, 1500); // Optional delay
+      });
+
+    // --- Touch/Zoom Prevention (Keep if needed) ---
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('touchmove', e => {
+        if (e.touches.length > 1) { // Prevent pinch-zoom
+             e.preventDefault();
+        }
+    }, { passive: false });
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+    // --- End Touch/Zoom Prevention ---
+
+  
+}
+</script>
+
+<script>verifyAccessBeforeContinue();</script>
+</body></html>
